@@ -6,7 +6,7 @@
 #define MAP_DIFF 1                                                            //define number of out diff
 #define MAX_ADC_VAL 4095                                                      //define in value range
 #define MAX_MAP_VAL 100                                                       //define out value range
-#define DEBOUNCE_TIME 150
+#define DEBOUNCE_TIME 50
 
 const volatile int sliders[SLIDER_COUNT] = {PA5, PA4, PA3, PA2, PA1, PA0};    //sets sliders inputs
 const volatile int buttons[BUTTON_COUNT] = {PB12, PB13, PB14, PB15, PA8};     //sets buttons input
@@ -59,9 +59,13 @@ void loop() {
       mapValue = map(currentReading,0,MAX_ADC_VAL,0,MAX_MAP_VAL);             //in other case map value
     if(abs(mapValue - lastMapValue[slider_index]) >= MAP_DIFF){               //checking if map diff is bigger than value change
       lastMapValue[slider_index] = mapValue;
-      struct SliderStruct slider = {.command = 0x01, .slider = slider_index, .value = mapValue}; //assign values to data struct
+      struct SliderStruct slider = {
+        .command = 0x01, 
+        .slider = slider_index, 
+        .value = mapValue
+      };                                                                     //assign values to data struct
       Serial.write((byte *)&slider, sizeof(slider));                         //send data over the serial
-      Serial.write(0xFF);                                                   //send termination byte help parsing data in other side
+      Serial.write(0xFF);                                                    //send terminator to end struct parsing
       #ifdef DEBUG
         Serial.print("Slider: ");
         Serial.print(slider.slider);
@@ -72,18 +76,22 @@ void loop() {
     } 
   }
 
-  int buttonReading = digitalRead(buttons[button_index]);
-  if(buttonReading != lastButtonReading[button_index])
+  int buttonReading = digitalRead(buttons[button_index]);                     //reading current button state
+  if(buttonReading != lastButtonReading[button_index])                        //checking if state changed
     lastDebounceTime[button_index] = buttonReading;
 
-  if(millis() - lastDebounceTime[button_index] > DEBOUNCE_TIME)
+  if(millis() - lastDebounceTime[button_index] > DEBOUNCE_TIME)               //checking if the button has been pressed long enough
   {
-    if(buttonReading != lastButtonState[button_index])
+    if(buttonReading != lastButtonState[button_index])                        //checking if debounced button state changed
     {
       lastButtonState[button_index] = buttonReading;
-      struct ButtonStruct button = {.command = 0x02, .button = button_index, .state = buttonReading};
-      Serial.write((byte *)&button, sizeof(button));
-      Serial.write(0xFF);
+      struct ButtonStruct button = {
+        .command = 0x02, 
+        .button = button_index, 
+        .state = buttonReading
+      };                                                                     //assign values to data struct   
+      Serial.write((byte *)&button, sizeof(button));                         //send data over serial
+      Serial.write(0xFF);                                                    //send terminator to end struct parsing                        
       #ifdef DEBUG
         Serial.print("Button: ");
         Serial.print(button.button);
