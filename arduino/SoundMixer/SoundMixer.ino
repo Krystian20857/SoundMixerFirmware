@@ -1,15 +1,19 @@
 //#define DEBUG                                                               //enable debug mode
 #define SLIDER_COUNT 6                                                        //define number of sliders
 #define BUTTON_COUNT 5                                                        //define number of buttons
+#define LED_COUNT 2                                                            //define number of leds
 #define SAMPLES 12                                                            //define number of samples needed to averaging
 #define DIFF 40                                                               //define input diff
 #define MAP_DIFF 1                                                            //define number of out diff
 #define MAX_ADC_VAL 4095                                                      //define in value range
 #define MAX_MAP_VAL 100                                                       //define out value range
-#define DEBOUNCE_TIME 50
+#define DEBOUNCE_TIME 50                                                      //define buttons debounce time
+#define TERMINATOR 0xFF                                                       //define termination char use in serial communication
+#define BUFFER_SIZE 200                                                       //define serial buffer size
 
 const volatile int sliders[SLIDER_COUNT] = {PA5, PA4, PA3, PA2, PA1, PA0};    //sets sliders inputs
 const volatile int buttons[BUTTON_COUNT] = {PB12, PB13, PB14, PB15, PA8};     //sets buttons input
+const volatile int leds[LED_COUNT] = {PB8, PB9};                              //sets leds outputs
 volatile int lastSliderState[SLIDER_COUNT];                                   //constains last values of sliders
 volatile int lastMapValue[SLIDER_COUNT];                                      //contains last map value of sliders
 
@@ -19,6 +23,9 @@ volatile int lastButtonState[BUTTON_COUNT];                                   //
 
 int slider_index;
 int button_index;
+int serial_index;
+
+char buffer[BUFFER_SIZE];
 
 //using in serial communication
 struct SliderStruct{
@@ -33,6 +40,12 @@ struct ButtonStruct{
   uint8_t state;
 };
 
+struct LedStruct{
+  uint8_t command;
+  uint8_t led;
+  uint8_t state;
+};
+
 void setup() {
   Serial.begin(115200);                                                       //serial setup(baudrate is ignored my mapple)
 
@@ -41,6 +54,12 @@ void setup() {
 
   for(int n = 0; n < BUTTON_COUNT; n++)                                       //sets pinMode for all buttons
     pinMode(buttons[n], INPUT_PULLUP);
+
+  for(int n = 0; n < LED_COUNT; n++)
+    pinMode(leds[n], OUTPUT);
+
+  for(int n = 0; n < LED_COUNT; n++)
+    digitalWrite(leds[n], LOW);
 }
 
 void loop() {
@@ -65,7 +84,7 @@ void loop() {
         .value = mapValue
       };                                                                     //assign values to data struct
       Serial.write((byte *)&slider, sizeof(slider));                         //send data over the serial
-      Serial.write(0xFF);                                                    //send terminator to end struct parsing
+      Serial.write(TERMINATOR);                                              //send terminator to end struct parsing
       #ifdef DEBUG
         Serial.print("Slider: ");
         Serial.print(slider.slider);
@@ -91,7 +110,7 @@ void loop() {
         .state = buttonReading
       };                                                                     //assign values to data struct   
       Serial.write((byte *)&button, sizeof(button));                         //send data over serial
-      Serial.write(0xFF);                                                    //send terminator to end struct parsing                        
+      Serial.write(TERMINATOR);                                              //send terminator to end struct parsing                        
       #ifdef DEBUG
         Serial.print("Button: ");
         Serial.print(button.button);
@@ -99,6 +118,27 @@ void loop() {
         Serial.println(button.state);
       #endif
     }
+  }
+
+  if(Serial.available() > 0)                                                //checing if are any data to receive
+  {
+    char serialRead = Serial.read();                                        //checking if a byte is a termination char
+    if(serialRead == TERMINATOR)
+    {      
+      if(buffer[0] == 0x01)                                                 //handiling commands...
+      {
+        struct LedStruct ledStruct;                                         //creating struct from buffer
+        memcpy(&ledStruct, &buffer, sizeof(ledStruct));                     //copying buffer content to local struct variable
+        digitalWrite(leds[ledStruct.led], ledStruct.state);
+      }
+      memset(&buffer, 0, BUFFER_SIZE);                                      //clearing buffer
+      serial_index = 0;
+    }
+    else
+    {
+      buffer[serial_index] = serialRead;                                    //filling buffer
+      serial_index++;                                                       //increesing serial index;
+    }                                                                                                            
   }
   
   slider_index++;
