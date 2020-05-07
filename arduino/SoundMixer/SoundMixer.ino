@@ -1,7 +1,7 @@
 //#define DEBUG                                                               //enable debug mode
 #define SLIDER_COUNT 6                                                        //define number of sliders
 #define BUTTON_COUNT 5                                                        //define number of buttons
-#define LED_COUNT 2                                                            //define number of leds
+#define LED_COUNT 2                                                           //define number of leds
 #define SAMPLES 12                                                            //define number of samples needed to averaging
 #define DIFF 40                                                               //define input diff
 #define MAP_DIFF 1                                                            //define number of out diff
@@ -10,6 +10,10 @@
 #define DEBOUNCE_TIME 50                                                      //define buttons debounce time
 #define TERMINATOR 0xFF                                                       //define termination char use in serial communication
 #define BUFFER_SIZE 200                                                       //define serial buffer size
+const char DEVICE_NAME[30] PROGMEM = "My Sound Mixer";
+const uint8_t DEVICE_ID[6] PROGMEM = {0x43, 0xFD, 0x56, 0x93, 0x65, 0x32};
+//#define DEVICE_NAME "My Sound Mixer"
+//#define DEVICE_ID {0x43, 0xFD, 0x56, 0x93, 0x65, 0x32}
 
 const volatile int sliders[SLIDER_COUNT] = {PA5, PA4, PA3, PA2, PA1, PA0};    //sets sliders inputs
 const volatile int buttons[BUTTON_COUNT] = {PB12, PB13, PB14, PB15, PA8};     //sets buttons input
@@ -44,6 +48,12 @@ struct LedStruct{
   uint8_t command;
   uint8_t led;
   uint8_t state;
+};
+
+struct DEVICEIDResponse{
+  uint8_t command;
+  char name[32];
+  uint8_t uuid[6];
 };
 
 void setup() {
@@ -130,6 +140,16 @@ void loop() {
         struct LedStruct ledStruct;                                         //creating struct from buffer
         memcpy(&ledStruct, &buffer, sizeof(ledStruct));                     //copying buffer content to local struct variable
         digitalWrite(leds[ledStruct.led], ledStruct.state);
+      }
+      else if(buffer[0] == 0x02)
+      {
+        struct DEVICEIDResponse DEVICEIDResponse = {
+          .command = 0x03
+        };
+        memcpy((byte *)&DEVICEIDResponse.name, &DEVICE_NAME, sizeof(DEVICE_NAME));
+        memcpy((byte *)&DEVICEIDResponse.uuid, &DEVICE_ID, sizeof(DEVICE_ID));
+        Serial.write((byte *)&DEVICEIDResponse, sizeof(DEVICEIDResponse));
+        Serial.write(TERMINATOR);
       }
       memset(&buffer, 0, BUFFER_SIZE);                                      //clearing buffer
       serial_index = 0;
