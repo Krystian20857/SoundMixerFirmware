@@ -147,7 +147,7 @@ void loop() {
           .command = 0x03
         };
         DEVICEIDResponse.slider_count = SLIDER_COUNT;
-        DEVICEIDResponse.button_sount = BUTTON_COUNT;
+        DEVICEIDResponse.button_count = BUTTON_COUNT;
         memcpy((byte *)&DEVICEIDResponse.name, &DEVICE_NAME, sizeof(DEVICE_NAME));
         memcpy((byte *)&DEVICEIDResponse.uuid, &DEVICE_ID, sizeof(DEVICE_ID));
         Serial.write((byte *)&DEVICEIDResponse, sizeof(DEVICEIDResponse));
