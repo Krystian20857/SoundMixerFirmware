@@ -12,8 +12,6 @@
 #define BUFFER_SIZE 200                                                       //define serial buffer size
 const char DEVICE_NAME[30] PROGMEM = "My Sound Mixer";
 const uint8_t DEVICE_ID[6] PROGMEM = {0x43, 0xFD, 0x56, 0x93, 0x65, 0x32};
-//#define DEVICE_NAME "My Sound Mixer"
-//#define DEVICE_ID {0x43, 0xFD, 0x56, 0x93, 0x65, 0x32}
 
 const volatile int sliders[SLIDER_COUNT] = {PA5, PA4, PA3, PA2, PA1, PA0};    //sets sliders inputs
 const volatile int buttons[BUTTON_COUNT] = {PB12, PB13, PB14, PB15, PA8};     //sets buttons input
@@ -54,6 +52,8 @@ struct DEVICEIDResponse{
   uint8_t command;
   char name[32];
   uint8_t uuid[6];
+  uint8_t slider_count;
+  uint8_t button_count;
 };
 
 void setup() {
@@ -146,6 +146,8 @@ void loop() {
         struct DEVICEIDResponse DEVICEIDResponse = {
           .command = 0x03
         };
+        DEVICEIDResponse.slider_count = SLIDER_COUNT;
+        DEVICEIDResponse.button_sount = BUTTON_COUNT;
         memcpy((byte *)&DEVICEIDResponse.name, &DEVICE_NAME, sizeof(DEVICE_NAME));
         memcpy((byte *)&DEVICEIDResponse.uuid, &DEVICE_ID, sizeof(DEVICE_ID));
         Serial.write((byte *)&DEVICEIDResponse, sizeof(DEVICEIDResponse));
