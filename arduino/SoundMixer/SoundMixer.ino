@@ -48,8 +48,15 @@ struct LedStruct{
   uint8_t state;
 };
 
+
+struct DEVICEIDRequest{
+  uint8_t command;
+  uint8_t flag;
+};
+
 struct DEVICEIDResponse{
   uint8_t command;
+  uint8_t flag;
   char name[32];
   uint8_t uuid[6];
   uint8_t slider_count;
@@ -143,9 +150,12 @@ void loop() {
       }
       else if(buffer[0] == 0x02)
       {
+        struct DEVICEIDRequest DEVICEIDRequest;                                         //creating struct from buffer
+        memcpy(&DEVICEIDRequest, &buffer, sizeof(DEVICEIDRequest));                     //copying buffer content to local struct variable
         struct DEVICEIDResponse DEVICEIDResponse = {
           .command = 0x03
         };
+        DEVICEIDResponse.flag = DEVICEIDRequest.flag;
         DEVICEIDResponse.slider_count = SLIDER_COUNT;
         DEVICEIDResponse.button_count = BUTTON_COUNT;
         memcpy((byte *)&DEVICEIDResponse.name, &DEVICE_NAME, sizeof(DEVICE_NAME));
