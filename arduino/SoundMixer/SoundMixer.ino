@@ -1,7 +1,7 @@
 //#define DEBUG                                                               //enable debug mode
 #define SLIDER_COUNT 6                                                        //define number of sliders
 #define BUTTON_COUNT 5                                                        //define number of buttons
-#define LED_COUNT 2                                                           //define number of leds
+#define LED_COUNT 3                                                           //define number of leds
 #define SAMPLES 12                                                            //define number of samples needed to averaging
 #define DIFF 40                                                               //define input diff
 #define MAP_DIFF 1                                                            //define number of out diff
@@ -10,12 +10,12 @@
 #define DEBOUNCE_TIME 50                                                      //define buttons debounce time
 #define TERMINATOR 0xFF                                                       //define termination char use in serial communication
 #define BUFFER_SIZE 200                                                       //define serial buffer size
-const char DEVICE_NAME[30] PROGMEM = "My Sound Mixer";
-const uint8_t DEVICE_ID[6] PROGMEM = {0x43, 0xFD, 0x56, 0x93, 0x65, 0x32};
+const char DEVICE_NAME[30] PROGMEM = "My Sound Mixer v2";
+const uint8_t DEVICE_ID[6] PROGMEM = {0x23, 0xDD, 0x34, 0x93, 0x65, 0x32};
 
-const volatile int sliders[SLIDER_COUNT] = {PA5, PA4, PA3, PA2, PA1, PA0};    //sets sliders inputs
-const volatile int buttons[BUTTON_COUNT] = {PB12, PB13, PB14, PB15, PA8};     //sets buttons input
-const volatile int leds[LED_COUNT] = {PB8, PB9};                              //sets leds outputs
+const volatile int sliders[SLIDER_COUNT] = {PA0, PA1, PA2, PA3, PA4, PA5};    //sets sliders inputs
+const volatile int buttons[BUTTON_COUNT] = {PA8, PB15, PB14, PB13, PB12};     //sets buttons input
+const volatile int leds[LED_COUNT] = {PB9, PB8, PC13};                        //sets leds outputs
 volatile int lastSliderState[SLIDER_COUNT];                                   //constains last values of sliders
 volatile int lastMapValue[SLIDER_COUNT];                                      //contains last map value of sliders
 
