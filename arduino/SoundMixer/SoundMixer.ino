@@ -86,7 +86,7 @@ void loop()
     {
       lastSliderState[slider_index] = currentReading;
       int mapValue = 0;
-        mapValue = map(currentReading, 0, MAX_ADC_VAL - (0.5 * DIFF), 0, MAX_MAP_VAL); //in other case map value
+      mapValue = map(currentReading, 0, MAX_ADC_VAL - (0.75 * DIFF), 0, MAX_MAP_VAL); //in other case map value
       if (abs(mapValue - lastMapValue[slider_index]) >= MAP_DIFF)       //checking if map diff is bigger than value change
       {
         lastMapValue[slider_index] = mapValue;
