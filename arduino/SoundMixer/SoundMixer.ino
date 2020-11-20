@@ -98,6 +98,7 @@ void loop()
 #ifndef DEBUG
         Serial.write((byte *)&slider, sizeof(slider)); //send data over the serial
         Serial.write(TERMINATOR);                      //send terminator to end struct parsing
+        Serial.flush();
 #endif
 #ifdef DEBUG
         Serial.print("Slider: ");
@@ -126,6 +127,7 @@ void loop()
 #ifndef DEBUG
       Serial.write((byte *)&button, sizeof(button)); //send data over serial
       Serial.write(TERMINATOR);                      //send terminator to end struct parsing
+      Serial.flush();
 #endif
 #ifdef DEBUG
       Serial.print("Button: ");
@@ -160,6 +162,7 @@ void loop()
         memcpy((byte *)&DEVICEIDResponse.uuid, &DEVICE_ID, sizeof(DEVICE_ID));
         Serial.write((byte *)&DEVICEIDResponse, sizeof(DEVICEIDResponse));
         Serial.write(TERMINATOR);
+        Serial.flush();
       }
       memset(&buffer, 0, BUFFER_SIZE); //clearing buffer
       serial_index = 0;
